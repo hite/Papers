@@ -157,7 +157,32 @@ This concept is applies to computer screens under the name PPI for Pixels Per In
 <div class="w-answer-content" style="display:none">
 **答案是：第一题目（A），（A），（D）；第二题目（B），（A），（B），（A）；第三题目：（B），（B）；第四题目：（B）试题解析**  
 第一题目。回答这个问题之前需要搞清楚Bundle OS Type code，官方文档里[CFBundlePackageType](https://developer.apple.com/library/mac/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html#//apple_ref/doc/uid/20001431-111321) 部分提到`CFBundlePackageType (String - iOS, OS X) identifies the type of the bundle and is analogous to the Mac OS 9 file type code. The value for this key consists of a four-letter code. The type code for apps is APPL; for frameworks, it is FMWK; for loadable bundles, it is BNDL. For loadable bundles, you can also choose a type code that is more specific than BNDL if you want.
-All bundles should provide this key. However, if this key is not specified, the bundle routines use the bundle extension to determine the type, falling back to the BNDL type if the bundle extension is not recognized.`。此字段是Mac OS的遗产，在iOS端，打包时做校验，缺少或者错误设置可能导致无法submit app，例如[Techincal Q&A QA1273](https://developer.apple.com/library/ios/qa/qa1273/_index.html)。经过测试，这个字段在Debug模式下是无所谓什么值。*APPL*表明是一个独立的APP，而*XPC！*表明是XPC Services服务。之所以苹果将WatchKit extension设计为XPC服务，为了减少对其它Target的影响。`XPC services are managed by launchd, which launches them on demand, restarts them if they crash, and terminates them (by sending SIGKILL) when they are idle. This is transparent to the application using the service, except for the case of a service that crashes while processing a message that requires a response. In that case, the application can see that its XPC connection has become invalid until the service is restarted by launchd. Because an XPC service can be terminated suddenly at any time, it must be designed to hold on to minimal state—ideally, your service should be completely stateless, although this is not always possible.` 。[Understanding the Structure and Behaviour](https://developer.apple.com/library/mac/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingXPCServices.html#//apple_ref/doc/uid/10000172i-SW6-SW1)。<br/> 在实际测试中发现，Watch app和WatchKit extension是耦合的，要崩溃一起奔溃，两者崩溃时对iOS app没有影响————是不是很简单的答案？然而看到XPC server这种服务的时候，很好奇 3个Target（iOS app, Watch app, WatchKit extionsion)是如何组织在一起的。从代码层面得到结论：iOS app的`Build Phases`里添加了Watch app为`Target Dependecies`之一，同时Watch app的plist里字段`WKCompanionAppBundleIdentifier`是iOS app的bundleId，而WatchKit app的plist的`WKAppBundleIdentifier`字段则是Watch app的bundleID，是这样连一起的。在文件系统中，是3层的包含关系。`ipa > iOS app > Watch/ > Watch app > Plugins/ > WatchKit extension.appex` 。看了XCode的配置和现在ipa的文件结构，还有目前运行的机理，我还是不很明白，正在查资料。
+All bundles should provide this key. However, if this key is not specified, the bundle routines use the bundle extension to determine the type, falling back to the BNDL type if the bundle extension is not recognized.`。此字段是Mac OS的遗产，在iOS端，打包时做校验，缺少或者错误设置可能导致无法submit app，例如[Techincal Q&A QA1273](https://developer.apple.com/library/ios/qa/qa1273/_index.html)。经过测试，这个字段在Debug模式下是无所谓什么值。*APPL*表明是一个独立的APP，而*XPC！*表明是XPC Services服务。之所以苹果将WatchKit extension设计为XPC服务，为了减少对其它Target的影响。`XPC services are managed by launchd, which launches them on demand, restarts them if they crash, and terminates them (by sending SIGKILL) when they are idle. This is transparent to the application using the service, except for the case of a service that crashes while processing a message that requires a response. In that case, the application can see that its XPC connection has become invalid until the service is restarted by launchd. Because an XPC service can be terminated suddenly at any time, it must be designed to hold on to minimal state—ideally, your service should be completely stateless, although this is not always possible.` 。[Understanding the Structure and Behaviour](https://developer.apple.com/library/mac/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingXPCServices.html#//apple_ref/doc/uid/10000172i-SW6-SW1)。<br/> 在实际测试中发现，Watch app和WatchKit extension是耦合的，要崩溃一起奔溃，两者崩溃时对iOS app没有影响————是不是很简单的答案？然而看到XPC server这种服务的时候，很好奇 3个Target（iOS app, Watch app, WatchKit extionsion)是如何组织在一起的。从代码层面得到结论：iOS app的`Build Phases`里添加了Watch app为`Target Dependecies`之一，同时Watch app的plist里字段`WKCompanionAppBundleIdentifier`是iOS app的bundleId，而WatchKit app的plist的`WKAppBundleIdentifier`字段则是Watch app的bundleID，是这样连一起的。在文件系统中，是3层的包含关系。`ipa > iOS app > Watch/ > Watch app > Plugins/ > WatchKit extension.appex` 。看了XCode的配置和现在ipa的文件结构，运行时，如何连接协调的机理，我还是不很明白，正在查资料。
+</div>
+1. 根据App Programming Guide for watchOS 章节[Communicating with Your Companion iOS App](https://developer.apple.com/library/watchos/documentation/General/Conceptual/WatchKitProgrammingGuide/SharingData.html#//apple_ref/doc/uid/TP40014969-CH29-SW1), `Use the Watch Connectivity framework to communicate between your WatchKit extension and iOS app. That framework provides bidirectional communications between the two processes and lets you transfer data and files in the foreground or background.`，大概分为两种传输方式，一种是background 一种是foreground。典型代表是支持后台传输的`transferUserInfo:`，`transferCurrentComplicationUserInfo:`；前台传输的`sendMessage:replyHandler:errorHandler:
+`，`sendMessageData:replyHandler:errorHandler:`。（ <input style="width:50px;" type="text" name="answer"/> ）
+<ol type="A">
+	<li>
+	1.3 inches
+	</li>
+	<li>
+	1.4 inches
+	</li>
+	<li>
+	1.5 inches
+	</li>
+	<li>
+	1.6 inches
+	</li>
+	<li>
+	1.7 inches
+	</li>
+</ol>
+<button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
+<div class="w-answer-content" style="display:none">
+**答案是（A，C），（C，C）试题解析**  
+回答这个问题之前需要搞清楚什么是xcode的构建，见[贴文](http://gcblog.github.io/2016/03/12/Xcode多工程联编及工程依赖/)
+首先明确，Apple Watch的文档里标明的38mm，是指整个表盘的高度，**不是**屏幕高度。下图
 </div>
 1. 请阅读以下资料，回答问题。请选择选择下面哪项描述正确。（ <input style="width:50px;" type="text" name="answer"/> ）
 <ol type="A">
