@@ -125,6 +125,9 @@ This concept is applies to computer screens under the name PPI for Pixels Per In
 	<li>
 	不会crash，因为是3个不同Target，不会相互干扰
 	</li>
+	<li>
+	我不知道，我也不想猜
+	</li>
 </ol>
 第三：以网易有钱为例，最新版之后iOS10和WatchOS。假设Watch app + WatchKit extension的容量是20M，iOS app是30M，并且Watch app + WatchKit 配置的`Deployment target`都是3.0，问：某用户升级到iOS10，此时从Apple store 下载的网易有钱安装包是多大？（ <input style="width:50px;" type="text" name="answer"/> ）；某用户是iOS9，配对的Apple Watch是WatchOS 2，此时从Apple store 下载的网易有钱安装包是多大？（ <input style="width:50px;" type="text" name="answer"/> ），安装最新网易有钱，此时
 <ol type="A">
@@ -159,8 +162,52 @@ This concept is applies to computer screens under the name PPI for Pixels Per In
 第一题目。回答这个问题之前需要搞清楚Bundle OS Type code，官方文档里[CFBundlePackageType](https://developer.apple.com/library/mac/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html#//apple_ref/doc/uid/20001431-111321) 部分提到`CFBundlePackageType (String - iOS, OS X) identifies the type of the bundle and is analogous to the Mac OS 9 file type code. The value for this key consists of a four-letter code. The type code for apps is APPL; for frameworks, it is FMWK; for loadable bundles, it is BNDL. For loadable bundles, you can also choose a type code that is more specific than BNDL if you want.
 All bundles should provide this key. However, if this key is not specified, the bundle routines use the bundle extension to determine the type, falling back to the BNDL type if the bundle extension is not recognized.`。此字段是Mac OS的遗产，在iOS端，打包时做校验，缺少或者错误设置可能导致无法submit app，例如[Techincal Q&A QA1273](https://developer.apple.com/library/ios/qa/qa1273/_index.html)。经过测试，这个字段在Debug模式下是无所谓什么值。*APPL*表明是一个独立的APP，而*XPC！*表明是XPC Services服务。之所以苹果将WatchKit extension设计为XPC服务，为了减少对其它Target的影响。`XPC services are managed by launchd, which launches them on demand, restarts them if they crash, and terminates them (by sending SIGKILL) when they are idle. This is transparent to the application using the service, except for the case of a service that crashes while processing a message that requires a response. In that case, the application can see that its XPC connection has become invalid until the service is restarted by launchd. Because an XPC service can be terminated suddenly at any time, it must be designed to hold on to minimal state—ideally, your service should be completely stateless, although this is not always possible.` 。[Understanding the Structure and Behaviour](https://developer.apple.com/library/mac/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingXPCServices.html#//apple_ref/doc/uid/10000172i-SW6-SW1)。<br/> 在实际测试中发现，Watch app和WatchKit extension是耦合的，要崩溃一起奔溃，两者崩溃时对iOS app没有影响————是不是很简单的答案？然而看到XPC server这种服务的时候，很好奇 3个Target（iOS app, Watch app, WatchKit extionsion)是如何组织在一起的。从代码层面得到结论：iOS app的`Build Phases`里添加了Watch app为`Target Dependecies`之一，同时Watch app的plist里字段`WKCompanionAppBundleIdentifier`是iOS app的bundleId，而WatchKit app的plist的`WKAppBundleIdentifier`字段则是Watch app的bundleID，是这样连一起的。在文件系统中，是3层的包含关系。`ipa > iOS app > Watch/ > Watch app > Plugins/ > WatchKit extension.appex` 。看了XCode的配置和现在ipa的文件结构，运行时，如何连接协调的机理，我还是不很明白，正在查资料。
 </div>
-1. 根据App Programming Guide for watchOS 章节[Communicating with Your Companion iOS App](https://developer.apple.com/library/watchos/documentation/General/Conceptual/WatchKitProgrammingGuide/SharingData.html#//apple_ref/doc/uid/TP40014969-CH29-SW1), `Use the Watch Connectivity framework to communicate between your WatchKit extension and iOS app. That framework provides bidirectional communications between the two processes and lets you transfer data and files in the foreground or background.`，大概分为两种传输方式，一种是background 一种是foreground。典型代表是支持后台传输的`transferUserInfo:`，`transferCurrentComplicationUserInfo:`；前台传输的`sendMessage:replyHandler:errorHandler:
-`，`sendMessageData:replyHandler:errorHandler:`。（ <input style="width:50px;" type="text" name="answer"/> ）
+1. 根据App Programming Guide for watchOS 章节[Communicating with Your Companion iOS App](https://developer.apple.com/library/watchos/documentation/General/Conceptual/WatchKitProgrammingGuide/SharingData.html#//apple_ref/doc/uid/TP40014969-CH29-SW1), `Use the Watch Connectivity framework to communicate between your WatchKit extension and iOS app. That framework provides bidirectional communications between the two processes and lets you transfer data and files in the foreground or background.`，一共有4组，分别是`updateApplicationContext:error:`，`transferUserInfo:和
+transferCurrentComplicationUserInfo:`，`transferFile:metadata:`，`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`，试根据以上资料，判断以下描述哪些是正确的？（ <input style="width:50px;" type="text" name="answer"/> ）
+<ol type="A">
+	<li>
+	以上接口大概分为两种传输方式，一种是background 一种是foreground。支持后台传输的有`updateApplicationContext:error:`，`transferUserInfo:和transferCurrentComplicationUserInfo:`，`transferFile:metadata:`；支持前台传输的是`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`。
+	</li>
+	<li>
+	以上接口，WatchKit extension和iOS app之前传输速度排行 `sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:` >= `transferCurrentComplicationUserInfo:` > `transferUserInfo:和updateApplicationContext:error:` > `transferFile:metadata:`
+	</li>
+	<li>
+	以上接口中，只有`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`可以从WatchKit extension端唤醒iOS app，并立即*及时*调用iOS app的相关接口。而iOS app没有办法唤醒WatchKit extension，并且立即执行WatchKit extension相关接口，只有等待watchOS系统自身在合适的时机在后台或者前台传输数组，也就是说依赖iOS app端发起数据传输是不可靠的。根据此特征，在watchOS日常业务开发中，我们采用从WatchKit extension端发起数据请求，iOS响应，返回数据的方式；而iOS app向WatchKit extension发起数据传输，作为为WatchKit extension做数据缓存的补充手段。
+	</li>
+	<li>
+	以上接口中，当iOS app调用`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`之后，如果在等待replayhandler被调用返回的过程中，Apple Watch和iPhone之间disconnect，那么在reconnect之前，请求返回值调用会被丢弃；而当iOS app调用`transferUserInfo:和updateApplicationContext:error:`之后，本次请求没有即时发送到Apple Watch，之后双方disconnect，过一段时间之后重新reconnect，则会继续在合适的时间发送数据到Apple Watch；而当iOS app调用`transferUserInfo:和updateApplicationContext:error:`之后，本次请求没有即时发送到Apple Watch，之后iOS app或者Watch app被kill，那么此次传输数据被丢失，iOS app或者Watch app在重启之后 也不会继续传输。
+	</li>
+	<li>
+	以上接口中，`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`的传输只有在iOS app向WatchKit extension发送时，需要reachable==YES的情况下请求；而WatchKit extension向iOS app请求时则不需要。
+	</li>
+</ol>
+<button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
+<div class="w-answer-content" style="display:none">
+**答案是（A，B，E）试题解析**  
+答案C，根据文档`transferCurrentComplicationUserInfo: method to send complication-related data from your iOS app to your Watch app. This method sends a high priority message to your WatchKit extension, waking it up as needed to deliver the data and update the complication’s timeline.
+Be aware, however, that your complication has a limited daily budget for updates. ` 可知`transferCurrentComplicationUserInfo:`拥有较高的传输优先级，而且可以唤醒WatchKit extension。但是答案C其余表述是正确；答案D，`updateApplicationContext:error:`会将需要传输的数据 存档archive为文件，保存到沙盒，所以即使kill掉Watch app被kill掉，沙盒文件不会别删除，所以还是处于待传输状态。
+</div>
+1. 在watchOS 3中，提供了一个新的接口 `WKExtension scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion:`，Schedules a background task to refresh your app’s data，目的是提供一个定时任务，然而没有提供如何取消此定时任务的接口，或者取消所有定时任务的接口，请问以下方式哪种方法，可以取消已经生效的定时任务。（ <input style="width:50px;" type="text" name="answer"/> ）
+<ol type="A">
+	<li>
+	使用相同参数设置定时任务，可取消上一次定时任务
+	</li>
+	<li>
+	kill掉Watch app
+	</li>
+	<li>
+	卸载Watch app
+	</li>
+	<li>
+	删除沙盒文件系统中的Library和Document 文件
+	</li>
+</ol>
+<button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
+<div class="w-answer-content" style="display:none">
+**答案是（A，C）试题解析**  
+其实这个问题的答案对于watchOS3 beta和watchOS3 release是不一样的。在watchOS3 release版本中，答案A也可以取消。并且在文档中[1650848-schedulebackgroundrefreshwithpre](https://developer.apple.com/reference/watchkit/wkextension/1650848-schedulebackgroundrefreshwithpre?language=objc)和watchOS API里，特别的注释了`// there can only be one background refresh request at any given time. Scheduling a second request will cancel the previously scheduled request`。但是在watchOS3 beta里是无法取消，如果多次调用会执行多次——这是一个很尴尬的境地。为了防止多次安装导致多次schedule任务的bug，尝试设置标记位防止多次设置或者在执行任务中检查是否已经执行过任务，两种方式来规避这个问题。 然而在watchOS3 release版本的改动，猜测Apple Watch Team也是基于解决这个尴尬的情况而做出的改动。 但用文明用语的说，这个有点扯淡，后台任务只能有一个，这不符合业务需求；同样的一个限制是，在complication里做动画，也会受限于reloadComplication budget（据说是一天只有50次机会）。这让实现功能的时候很掣肘，鸡肋的API，鸡肋的设计。<br/>答案D，不像`updateApplicationContext:error:`那样将需要传输的数据archive到本地文件。`scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion`应该注册到watchOS 系统内部来实现定时任务，类似launchInit。
+</div>
+1. 请阅读以下资料，回答问题。请选择选择下面哪项描述正确。（ <input style="width:50px;" type="text" name="answer"/> ）
 <ol type="A">
 	<li>
 	1.3 inches
