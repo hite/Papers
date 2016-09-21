@@ -1,4 +1,4 @@
-## WatchOS开发四级水平测试试题（beta）
+## WatchOS开发四级水平测试试题
 ***（本试题大纲限于watchOS 3）***
 ###### 名词约定
 watchOS开发中涉及到的主体包括，运行在iPhone的iOS程序（以下称`iOS app`），运作在Apple Watch端的App（以下简称`Watch app`)，运行在Apple Watch端的扩展（以下简称`WatchKit extension`）。
@@ -187,7 +187,7 @@ transferCurrentComplicationUserInfo:`，`transferFile:metadata:`，`sendMessage:
 答案C，根据文档`transferCurrentComplicationUserInfo: method to send complication-related data from your iOS app to your Watch app. This method sends a high priority message to your WatchKit extension, waking it up as needed to deliver the data and update the complication’s timeline.
 Be aware, however, that your complication has a limited daily budget for updates. ` 可知`transferCurrentComplicationUserInfo:`拥有较高的传输优先级，而且可以唤醒WatchKit extension。但是答案C其余表述是正确；答案D，`updateApplicationContext:error:`会将需要传输的数据 存档archive为文件，保存到沙盒，所以即使kill掉Watch app被kill掉，沙盒文件不会别删除，所以还是处于待传输状态。
 </div>
-1. 在watchOS 3中，提供了一个新的接口 `WKExtension scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion:`，Schedules a background task to refresh your app’s data，目的是提供一个定时任务，然而没有提供如何取消此定时任务的接口，或者取消所有定时任务的接口，请问以下方式哪种方法，可以取消已经生效的定时任务。（ <input style="width:50px;" type="text" name="answer"/> ）
+1. 在watchOS 3中，提供了一个新的接口 `WKExtension scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion:`，Schedules a background task to refresh your app’s data，请问以下方式哪种方法，可以取消已经生效的定时任务。（ <input style="width:50px;" type="text" name="answer"/> ）
 <ol type="A">
 	<li>
 	使用相同参数设置定时任务，可取消上一次定时任务
@@ -196,16 +196,16 @@ Be aware, however, that your complication has a limited daily budget for updates
 	kill掉Watch app
 	</li>
 	<li>
-	卸载Watch app
+	卸载Watch app，之后重新安装
 	</li>
 	<li>
-	删除沙盒文件系统中的Library和Document 文件
+	删除沙盒文件系统中的Library和Document文件
 	</li>
 </ol>
 <button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
 <div class="w-answer-content" style="display:none">
 **答案是（A，C）试题解析**  
-其实这个问题的答案对于watchOS3 beta和watchOS3 release是不一样的。在watchOS3 release版本中，答案A也可以取消。并且在文档中[1650848-schedulebackgroundrefreshwithpre](https://developer.apple.com/reference/watchkit/wkextension/1650848-schedulebackgroundrefreshwithpre?language=objc)和watchOS API里，特别的注释了`// there can only be one background refresh request at any given time. Scheduling a second request will cancel the previously scheduled request`。但是在watchOS3 beta里是无法取消，如果多次调用会执行多次——这是一个很尴尬的境地。为了防止多次安装导致多次schedule任务的bug，尝试设置标记位防止多次设置或者在执行任务中检查是否已经执行过任务，两种方式来规避这个问题。 然而在watchOS3 release版本的改动，猜测Apple Watch Team也是基于解决这个尴尬的情况而做出的改动。 但用文明用语的说，这个有点扯淡，后台任务只能有一个，这不符合业务需求；同样的一个限制是，在complication里做动画，也会受限于reloadComplication budget（据说是一天只有50次机会）。这让实现功能的时候很掣肘，鸡肋的API，鸡肋的设计。<br/>答案D，不像`updateApplicationContext:error:`那样将需要传输的数据archive到本地文件。`scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion`应该注册到watchOS 系统内部来实现定时任务，类似launchInit。
+在文档中[1650848-schedulebackgroundrefreshwithpre](https://developer.apple.com/reference/watchkit/wkextension/1650848-schedulebackgroundrefreshwithpre?language=objc)和watchOS API里，特别的注释了`// there can only be one background refresh request at any given time. Scheduling a second request will cancel the previously scheduled request`。后台任务只能有一个，这个限制不太符合业务需求；还有一个限制——在complication里做动画，也会受限于reloadComplication budget（据说是一天只有50次机会）。这让实现功能的时候很掣肘，鸡肋的API，鸡肋的设计。<br/>B, 文档中提到`Call this method to update the contents of your app in the background. When the task is triggered, the system wakes your app in the background and calls your extension delegate’s handleBackgroundTasks: method. `，是可以唤醒app，所以被kill掉也会被重启，所以B错误。<br/>答案C，实际测试是可以取消的，猜测卸载Watch app时会清理掉相关定时任务。<br/>答案D，不像`updateApplicationContext:error:`那样将需要传输的数据archive到本地文件。猜测`scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion`注册到watchOS 系统内部来实现定时任务，类似launchd管理，在沙盒里没找到和定时任务有关系的文件。
 </div>
 1. 请阅读以下资料，回答问题。请选择选择下面哪项描述正确。（ <input style="width:50px;" type="text" name="answer"/> ）
 <ol type="A">
@@ -231,23 +231,20 @@ Be aware, however, that your complication has a limited daily budget for updates
 回答这个问题之前需要搞清楚什么是xcode的构建，见[贴文](http://gcblog.github.io/2016/03/12/Xcode多工程联编及工程依赖/)
 首先明确，Apple Watch的文档里标明的38mm，是指整个表盘的高度，**不是**屏幕高度。下图
 </div>
-1. 请阅读以下资料，回答问题。请选择选择下面哪项描述正确。（ <input style="width:50px;" type="text" name="answer"/> ）
+1. 从iOS (9.0 and later)开始，`WCSession`有一个属性`watchDirectoryURL`,根据API的注释`Use this directory to persist any data specific to the selected Watch. The location of the URL will change when the selected Watch changes. This directory will be deleted upon next launch if the watch app is uninstalled for the selected Watch, or that Watch is unpaired. If the watch app is not installed for the selected Watch the value will be nil.`。文档[WCSession]() `Your iOS app can use the watchDirectoryURL property to store data that is specific to only one instance of your Watch app running on a particular Apple Watch. In most cases, the data you display in each instance of your Watch app is the same. However, you might use this directory to store configuration data, preferences, or other data files that your iOS app needs to interact properly with your Watch app. If you do, use the activation and deactivation process to update your iOS app`。通常用来作为要传输到WatchKit extension端文件的缓存地点，作用类似macOS上的`~`目录，方便管理。如贴文[iOS-WatchKit File Transfers Work Unreliably](http://stackoverflow.com/questions/34477577/ios-watchkit-file-transfers-work-unreliably)。打开iOS app的沙盒，可知实际上watchDirectoryURL其实位于沙盒的Library目录，<a style="cursor:hand;text-decoration:none;" href="http://ooo.0o0.ooo/2016/08/22/57bad8e11652c.png" target="_blank">
+		<img  src="https://ooo.0o0.ooo/2016/09/20/57e121e29a227.jpg"/>
+	</a>。如上图所示 watchDirectoryURL应该是`Documents\Application Support\com.apple.watchconnectivity\***\WatchContent`，同时和`$watchDirectoryURL`并列的还有一个文件夹`UserInfoTransfers`，如果仔细查看还可以发现在Document目录下还有个Inbox的目录,里面也有个文件夹`UserInfo`，<a style="cursor:hand;text-decoration:none;" href="http://ooo.0o0.ooo/2016/08/22/57bad8e11652c.png" target="_blank">
+		<img src="https://ooo.0o0.ooo/2016/09/20/57e1214a66354.jpg"/>
+	</a>，对于当前download得到的xcappdata而言，经过对比发现这个文件夹下面的文件内容是一样的。 阅读以上资料，对两个文件夹描述正确的选项是
+（ <input style="width:50px;" type="text" name="answer"/> ）
 <ol type="A">
 	<li>
-	1.3 inches
+	文件夹命名不同，两者没有关系，只是这个xcappdata文件的两者 碰巧相同而言。
 	</li>
 	<li>
-	1.4 inches
+	`UserInfoTransfers`拷贝自`UserInfo`文件夹。大部分时间是一致的
 	</li>
-	<li>
-	1.5 inches
-	</li>
-	<li>
-	1.6 inches
-	</li>
-	<li>
-	1.7 inches
-	</li>
+	<li>不知道，这部分没有文档，是个黑盒。也不想猜</li>
 </ol>
 <button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
 <div class="w-answer-content" style="display:none">
