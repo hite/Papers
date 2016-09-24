@@ -187,6 +187,77 @@ transferCurrentComplicationUserInfo:`，`transferFile:metadata:`，`sendMessage:
 答案C，根据文档`transferCurrentComplicationUserInfo: method to send complication-related data from your iOS app to your Watch app. This method sends a high priority message to your WatchKit extension, waking it up as needed to deliver the data and update the complication’s timeline.
 Be aware, however, that your complication has a limited daily budget for updates. ` 可知`transferCurrentComplicationUserInfo:`拥有较高的传输优先级，而且可以唤醒WatchKit extension。但是答案C其余表述是正确；答案D，`updateApplicationContext:error:`会将需要传输的数据 存档archive为文件，保存到沙盒，所以即使kill掉Watch app被kill掉，沙盒文件不会别删除，所以还是处于待传输状态。
 </div>
+1. 接上述题目，以典型的`updateApplicationContext:error:`代表后台传输，以`sendMessage:replyHandler:errorHandler:`代表前台（或者称之立即传输），假设WatchKit没有效率、电量、其他数据排队的因素考虑的情况下，请判断下述情况下，执行上述代码后（以上代码均在iPhone端执行），数据的传输情况。<br/>第一：当iOS app处于前台、Apple Watch处于前台,执行后（ <input style="width:50px;" type="text" name="answer"/> ）
+<ol type="A">
+	<li>
+	`updateApplicationContext:error:`数据已经传输到Apple Watch，Watch app可以使用数据
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据已经传输到Apple Watch，Watch app可以使用数据
+	</li>
+	<li>
+	`updateApplicationContext:error:`数据已经传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新进入主界面
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据已经传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新进入主界面
+	</li>
+</ol>
+第二：当iOS app处于前台、Apple Watch处于点亮状态，Watch app刚刚切换到后台期间,执行后（ <input style="width:50px;" type="text" name="answer"/> ）
+<ol type="A">
+	<li>
+	`updateApplicationContext:error:`数据已经传输到Apple Watch，Watch app可以使用数据
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据已经传输到Apple Watch，Watch app可以使用数据
+	</li>
+	<li>
+	`updateApplicationContext:error:`数据已经传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新进入主界面
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据已经传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新进入主界面
+	</li>
+</ol>
+第三：当iOS app处于前台、Apple Watch处于点亮状态，Watch app切换到后台期间有一段时间了,执行后（ <input style="width:50px;" type="text" name="answer"/> ）
+<ol type="A">
+	<li>
+	`updateApplicationContext:error:`数据已经传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新启动进入主界面
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据已经传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新启动进入主界面
+	</li>
+	<li>
+	`updateApplicationContext:error:`数据尚未传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新启动进入主界面
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据尚未传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新启动进入主界面
+	</li>
+	<li>
+	`updateApplicationContext:error:`数据尚未传输到Apple Watch，本次数据丢失，即使Watch app重新启动进入主界面
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据尚未传输到Apple Watch，本次数据丢失，即使Watch app重新启动进入主界面</li>
+</ol>
+第四：当iOS app处于前台、而Watch app被kill掉，Apple Watch屏幕处于熄灭状态,执行后（ <input style="width:50px;" type="text" name="answer"/> ）
+<ol type="A">
+	<li>
+	`updateApplicationContext:error:`数据已经传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新启动进入主界面
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据已经传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新启动进入主界面
+	</li>
+	<li>
+	`updateApplicationContext:error:`数据尚未传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新启动进入主界面
+	</li>
+	<li>
+	`sendMessage:replyHandler:errorHandler:`数据尚未传输到Apple Watch，Watch app不可以使用数据，直到Watch app重新启动进入主界面
+	</li>
+</ol>
+<button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
+<div class="w-answer-content" style="display:none">
+**答案是（A，C），（C，C）试题解析**  
+回答这个问题之前需要搞清楚什么是xcode的构建，见[贴文](http://gcblog.github.io/2016/03/12/Xcode多工程联编及工程依赖/)
+首先明确，Apple Watch的文档里标明的38mm，是指整个表盘的高度，**不是**屏幕高度。下图
+</div>
 1. 在watchOS 3中，提供了一个新的接口 `WKExtension scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion:`，Schedules a background task to refresh your app’s data，请问以下方式哪种方法，可以取消已经生效的定时任务。（ <input style="width:50px;" type="text" name="answer"/> ）
 <ol type="A">
 	<li>
@@ -207,6 +278,27 @@ Be aware, however, that your complication has a limited daily budget for updates
 **答案是（A，C）试题解析**  
 在文档中[1650848-schedulebackgroundrefreshwithpre](https://developer.apple.com/reference/watchkit/wkextension/1650848-schedulebackgroundrefreshwithpre?language=objc)和watchOS API里，特别的注释了`// there can only be one background refresh request at any given time. Scheduling a second request will cancel the previously scheduled request`。后台任务只能有一个，这个限制不太符合业务需求；还有一个限制——在complication里做动画，也会受限于reloadComplication budget（据说是一天只有50次机会）。这让实现功能的时候很掣肘，鸡肋的API，鸡肋的设计。<br/>B, 文档中提到`Call this method to update the contents of your app in the background. When the task is triggered, the system wakes your app in the background and calls your extension delegate’s handleBackgroundTasks: method. `，是可以唤醒app，所以被kill掉也会被重启，所以B错误。<br/>答案C，实际测试是可以取消的，猜测卸载Watch app时会清理掉相关定时任务。<br/>答案D，不像`updateApplicationContext:error:`那样将需要传输的数据archive到本地文件。猜测`scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion`注册到watchOS 系统内部来实现定时任务，类似launchd管理，在沙盒里没找到和定时任务有关系的文件。
 </div>
+1. 从iOS (9.0 and later)开始，`WCSession`有一个属性`watchDirectoryURL`,根据API的注释`Use this directory to persist any data specific to the selected Watch. The location of the URL will change when the selected Watch changes. This directory will be deleted upon next launch if the watch app is uninstalled for the selected Watch, or that Watch is unpaired. If the watch app is not installed for the selected Watch the value will be nil.`。文档[WCSession]() `Your iOS app can use the watchDirectoryURL property to store data that is specific to only one instance of your Watch app running on a particular Apple Watch. In most cases, the data you display in each instance of your Watch app is the same. However, you might use this directory to store configuration data, preferences, or other data files that your iOS app needs to interact properly with your Watch app. If you do, use the activation and deactivation process to update your iOS app`。通常用来作为要传输到WatchKit extension端文件的缓存地点，作用类似macOS上的`~`目录，方便管理。如贴文[iOS-WatchKit File Transfers Work Unreliably](http://stackoverflow.com/questions/34477577/ios-watchkit-file-transfers-work-unreliably)。打开iOS app的沙盒，可知实际上watchDirectoryURL其实位于沙盒的Library目录，<a style="cursor:hand;text-decoration:none;" href="http://ooo.0o0.ooo/2016/08/22/57bad8e11652c.png" target="_blank">
+		<img  src="https://ooo.0o0.ooo/2016/09/20/57e121e29a227.jpg"/>
+	</a>。如上图所示 watchDirectoryURL应该是`Documents\Application Support\com.apple.watchconnectivity\***\WatchContent`，同时和`$watchDirectoryURL`并列的还有一个文件夹`UserInfoTransfers`，如果仔细查看还可以发现在Document目录下还有个Inbox的目录,里面也有个文件夹`UserInfo`，<a style="cursor:hand;text-decoration:none;" href="http://ooo.0o0.ooo/2016/08/22/57bad8e11652c.png" target="_blank">
+		<img src="https://ooo.0o0.ooo/2016/09/20/57e1214a66354.jpg"/>
+	</a>，对于当前download得到的xcappdata而言，经过对比发现这个文件夹下面的文件内容是一样的。 阅读以上资料，对两个文件夹描述正确的选项是
+（ <input style="width:50px;" type="text" name="answer"/> ）
+<ol type="A">
+	<li>
+	文件夹命名不同，两者没有关系，只是这个xcappdata文件的两者 碰巧相同而言。
+	</li>
+	<li>
+	`UserInfoTransfers`拷贝自`UserInfo`文件夹。大部分时间是一致的
+	</li>
+	<li>不知道，这部分没有文档，是个黑盒。也不想猜</li>
+</ol>
+<button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
+<div class="w-answer-content" style="display:none">
+**答案是（A，C），（C，C）试题解析**  
+回答这个问题之前需要搞清楚什么是xcode的构建，见[贴文](http://gcblog.github.io/2016/03/12/Xcode多工程联编及工程依赖/)
+首先明确，Apple Watch的文档里标明的38mm，是指整个表盘的高度，**不是**屏幕高度。下图
+</div>
 1. 请阅读以下资料，回答问题。请选择选择下面哪项描述正确。（ <input style="width:50px;" type="text" name="answer"/> ）
 <ol type="A">
 	<li>
@@ -224,27 +316,6 @@ Be aware, however, that your complication has a limited daily budget for updates
 	<li>
 	1.7 inches
 	</li>
-</ol>
-<button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
-<div class="w-answer-content" style="display:none">
-**答案是（A，C），（C，C）试题解析**  
-回答这个问题之前需要搞清楚什么是xcode的构建，见[贴文](http://gcblog.github.io/2016/03/12/Xcode多工程联编及工程依赖/)
-首先明确，Apple Watch的文档里标明的38mm，是指整个表盘的高度，**不是**屏幕高度。下图
-</div>
-1. 从iOS (9.0 and later)开始，`WCSession`有一个属性`watchDirectoryURL`,根据API的注释`Use this directory to persist any data specific to the selected Watch. The location of the URL will change when the selected Watch changes. This directory will be deleted upon next launch if the watch app is uninstalled for the selected Watch, or that Watch is unpaired. If the watch app is not installed for the selected Watch the value will be nil.`。文档[WCSession]() `Your iOS app can use the watchDirectoryURL property to store data that is specific to only one instance of your Watch app running on a particular Apple Watch. In most cases, the data you display in each instance of your Watch app is the same. However, you might use this directory to store configuration data, preferences, or other data files that your iOS app needs to interact properly with your Watch app. If you do, use the activation and deactivation process to update your iOS app`。通常用来作为要传输到WatchKit extension端文件的缓存地点，作用类似macOS上的`~`目录，方便管理。如贴文[iOS-WatchKit File Transfers Work Unreliably](http://stackoverflow.com/questions/34477577/ios-watchkit-file-transfers-work-unreliably)。打开iOS app的沙盒，可知实际上watchDirectoryURL其实位于沙盒的Library目录，<a style="cursor:hand;text-decoration:none;" href="http://ooo.0o0.ooo/2016/08/22/57bad8e11652c.png" target="_blank">
-		<img  src="https://ooo.0o0.ooo/2016/09/20/57e121e29a227.jpg"/>
-	</a>。如上图所示 watchDirectoryURL应该是`Documents\Application Support\com.apple.watchconnectivity\***\WatchContent`，同时和`$watchDirectoryURL`并列的还有一个文件夹`UserInfoTransfers`，如果仔细查看还可以发现在Document目录下还有个Inbox的目录,里面也有个文件夹`UserInfo`，<a style="cursor:hand;text-decoration:none;" href="http://ooo.0o0.ooo/2016/08/22/57bad8e11652c.png" target="_blank">
-		<img src="https://ooo.0o0.ooo/2016/09/20/57e1214a66354.jpg"/>
-	</a>，对于当前download得到的xcappdata而言，经过对比发现这个文件夹下面的文件内容是一样的。 阅读以上资料，对两个文件夹描述正确的选项是
-（ <input style="width:50px;" type="text" name="answer"/> ）
-<ol type="A">
-	<li>
-	文件夹命名不同，两者没有关系，只是这个xcappdata文件的两者 碰巧相同而言。
-	</li>
-	<li>
-	`UserInfoTransfers`拷贝自`UserInfo`文件夹。大部分时间是一致的
-	</li>
-	<li>不知道，这部分没有文档，是个黑盒。也不想猜</li>
 </ol>
 <button type="submit" style="width:100px;height:26px;margin:0 5px;" name="viewAnswer" onclick="var ele = this.nextElementSibling;ele.style.display = (ele.style.display=='none'?'block':'none');">查看答案</button>
 <div class="w-answer-content" style="display:none">
