@@ -301,6 +301,6 @@ In iOS, the contents of this directory are backed up by iTunes and iCloud.`。�
 
 以上题目其实答案并不是很准确，大部分是经过我验证，有一些是自己的经验判断。WatchOS的开发，目前对于Apple来说不受重视，对于App的开发商而言，Watch app也仅仅是个为了迎合apple store上架而完成的任务。目前app开发商和Apple自身都没很好的Watch app让Watch app爆发。看WatchOS的文档对WatchOS质量深深的担忧，临近9月14日了，Programming Guide里还有若干旧的文档说明，如glance。新版本的API还有诸多问题。`WKExtension scheduleBackgroundRefreshWithPreferredDate:userInfo:scheduledCompletion:`的定时任务在超过1、2小时之后执行，永远不准时；iPhone端发出来的transcomplicate永远不会触发后台任务等。
 
-然而，在WWDC2016上，Apple 展示了和腾讯合作开发电话黑名单功能——相比看重腾讯用户产生的巨大的基础数据库，这正是中国互联网一直在美国后面跟跑过程中的个别优势项目；类似的还有在watchOS2里提供的Maps里提供的导航功能，这些功能只有个别城市可以使用——除了几个美国城市和绍兴欧洲美洲几个城市，剩下有300多个中国城市！![80b9acb020a0d041a72a0a286de7e408.jpg](https://ooo.0o0.ooo/2016/09/27/57ea565640ba3.jpg)。这就是形如蝼蚁的中国程序员默默中取得的成绩——路犹远已近。
+然而，在WWDC2016上，Apple 展示了和腾讯合作开发电话黑名单功能——相比看重腾讯用户产生的巨大的基础数据库，这正是中国互联网一直在美国后面跟跑过程中的个别优势项目；类似的还有在[watchOS2里提供的Maps](http://www.imore.com/watchos-2-review)里提供的导航功能，这些功能只有个别城市可以使用——除了几个美国城市和绍兴欧洲美洲几个城市，剩下有300多个中国城市！，一次基础数据的完胜![80b9acb020a0d041a72a0a286de7e408.jpg](https://ooo.0o0.ooo/2016/09/27/57ea565640ba3.jpg)。这就是形如蝼蚁的中国程序员默默中取得的成绩——路犹远已近。
 
 
