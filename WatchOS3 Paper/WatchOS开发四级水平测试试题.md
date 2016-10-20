@@ -172,7 +172,7 @@ All bundles should provide this key. However, if this key is not specified, the 
 	<a style="cursor:hand;text-decoration:none;" href="https://ooo.0o0.ooo/2016/10/17/5804958189c80.png" target="_blank">
 		<img title="iOS8.4的appstore" style="width:300px;" src="https://ooo.0o0.ooo/2016/10/17/5804958189c80.png"/> 
 	</a>，
-	而在iOS10上安装包是是40.7M，安装完毕之后占用磁盘容量是53.7M。经过在iPhone5、iPhone6、iPhone6PiOS10设备上的测试，他们的安装包和安装后的占用容量都是一样的；同时iOS8的iPod和iPhone5安装包和安装后的占用容量都是一样的———和是否有Apple Watch配对无关，这样某设备一旦检测有Apple Watch配对，可以本地将iOS上搭载的Watch app安装到Apple Watch上，所以第三题目都是（B），（B）。如果是iPhone配对的Apple Watch的watchOS版本不符合`Deploy target`，在iPhone上的`Watch` app里不会显示对应Watch app，如果是旧版本有Watch app，则会卸载掉就版本的Watch app。第四题目，答案是（B）
+	而在iOS10上安装包是是40.7M，安装完毕之后占用磁盘容量是53.7M。经过在iPhone5、iPhone6、iPhone6PiOS10设备上的测试，他们的安装包和安装后的占用容量都是一样的；同时iOS8的iPod和iPhone5安装包和安装后的占用容量都是一样的———和是否有Apple Watch配对无关，这样某设备一旦检测有Apple Watch配对，可以本地将iOS上搭载的Watch app安装到Apple Watch上，所以第三题目都是（B），（B）。因为用户是iOS9，大于部署的目标版本，所以iOS app是可以更新的，而iPhone配对的Apple Watch的watchOS版本不符合`Deploy target`，watchOS3是没有bundled在iOS9的设备上，所以在iPhone上的`Watch` app里不会显示对应Watch app，如果是旧版本有Watch app，则会卸载掉就版本的Watch app。第四题目，答案是（B）
 </div>
 1. 根据App Programming Guide for watchOS 章节[Communicating with Your Companion iOS App](https://developer.apple.com/library/watchos/documentation/General/Conceptual/WatchKitProgrammingGuide/SharingData.html#//apple_ref/doc/uid/TP40014969-CH29-SW1), `Use the Watch Connectivity framework to communicate between your WatchKit extension and iOS app. That framework provides bidirectional communications between the two processes and lets you transfer data and files in the foreground or background.`，一共有4组，分别是`updateApplicationContext:error:`，`transferUserInfo:和
 transferCurrentComplicationUserInfo:`，`transferFile:metadata:`，`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`，试根据以上资料，判断以下描述哪些是正确的？（ <input style="width:50px;" type="text" name="answer"/> ）
@@ -184,7 +184,7 @@ transferCurrentComplicationUserInfo:`，`transferFile:metadata:`，`sendMessage:
 	以上接口，WatchKit extension和iOS app之前传输速度排行 `sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:` >= `transferCurrentComplicationUserInfo:` > `transferUserInfo:和updateApplicationContext:error:` > `transferFile:metadata:`
 	</li>
 	<li>
-	以上接口中，只有`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`可以从WatchKit extension端唤醒iOS app，并立即*及时*调用iOS app的相关接口。而iOS app没有办法唤醒WatchKit extension，并且立即执行WatchKit extension相关接口，只有等待watchOS系统自身在合适的时机在后台或者前台传输数组，也就是说依赖iOS app端发起数据传输是不可靠的。根据此特征，在watchOS日常业务开发中，我们采用从WatchKit extension端发起数据请求，iOS响应，返回数据的方式；而iOS app向WatchKit extension发起数据传输，作为为WatchKit extension做数据缓存的补充手段。
+	以上接口中，只有`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`可以从WatchKit extension端唤醒iOS app，并立即*及时*调用iOS app的相关接口。而iOS app没有办法唤醒WatchKit extension，并且立即执行WatchKit extension相关接口，只有等待watchOS系统自身在合适的时机在后台或者前台传输数组，也就是说依赖iOS app端发起数据传输是不可靠的。根据此特征，在watchOS日常业务开发中，我们采用从WatchKit extension端发起数据请求，iOS响应、返回数据的方式；而iOS app向WatchKit extension发起数据传输，作为为WatchKit extension做数据缓存的补充手段。
 	</li>
 	<li>
 	以上接口中，当iOS app调用`sendMessage:replyHandler:errorHandler:和sendMessageData:replyHandler:errorHandler:`之后，如果在等待replayhandler被调用返回的过程中，Apple Watch和iPhone之间disconnect，那么在reconnect之前，请求返回值调用会被丢弃；而当iOS app调用`transferUserInfo:和updateApplicationContext:error:`之后，本次请求没有即时发送到Apple Watch，之后双方disconnect，过一段时间之后重新reconnect，则会继续在合适的时间发送数据到Apple Watch；而当iOS app调用`transferUserInfo:和updateApplicationContext:error:`之后，本次请求没有即时发送到Apple Watch，之后iOS app或者Watch app被kill，那么此次传输数据被丢失，iOS app或者Watch app在重启之后 也不会继续传输。
@@ -197,7 +197,7 @@ transferCurrentComplicationUserInfo:`，`transferFile:metadata:`，`sendMessage:
 <div class="w-answer-content" style="display:none">
 **答案是（A，B，E）试题解析**  
 答案C，根据文档`transferCurrentComplicationUserInfo: method to send complication-related data from your iOS app to your Watch app. This method sends a high priority message to your WatchKit extension, waking it up as needed to deliver the data and update the complication’s timeline.
-Be aware, however, that your complication has a limited daily budget for updates. ` 可知`transferCurrentComplicationUserInfo:`拥有较高的传输优先级，而且可以唤醒WatchKit extension。但是答案C其余表述是正确；答案D，`updateApplicationContext:error:`会将需要传输的数据 存档archive为文件，保存到沙盒，所以即使kill掉Watch app被kill掉，沙盒文件不会别删除，所以还是处于待传输状态。
+Be aware, however, that your complication has a limited daily budget for updates. ` 可知`transferCurrentComplicationUserInfo:`拥有较高的传输优先级，而且可以唤醒WatchKit extension。答案C其余部分表述是正确；答案D，`updateApplicationContext:error:`会将需要传输的数据 存档archive为文件，保存到沙盒，所以即使kill掉Watch app被kill掉，沙盒文件不会别删除，所以还是处于待传输状态。
 </div>
 1. 接上述题目，以典型的`updateApplicationContext:error:`代表后台传输，以`sendMessage:replyHandler:errorHandler:`代表前台（或者称之立即传输），假设WatchKit没有效率、电量、其他数据排队的因素考虑的情况下，请判断下述情况下，执行上述代码后（以上代码均在iPhone端执行），数据的传输情况。<br/>第一：当iOS app处于前台、Apple Watch处于前台,执行后（ <input style="width:50px;" type="text" name="answer"/> ）
 <ol type="A">

@@ -101,7 +101,7 @@
 			'C',//3
 			'A','A','D',/****/'B','A','B','A',/****/'B','B',/****/'B',//4
 			'A,B,E',//5
-			'A,B',/****/'A,B',/****/'C,F',/****/'C',//6
+			'A,B',/****/'A,B',/****/'C,F',/****/'C',/****/'C,F',//6
 			'A,C',//7
 			'A'//8
 		];
@@ -118,7 +118,7 @@
 				var answer = answerBtns[i].value;
 				var standard = standardScore[i];
 				if (answer.length == 0) {
-					rigthTotal = 0;
+					rigthTotal -= 0;
 				}else if (answer == standard) {
 					rigthTotal += 1;
 				}else if(standard.indexOf(answer) > -1){
