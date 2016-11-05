@@ -1,6 +1,6 @@
 ## WatchOS开发四级水平测试试题
 ***（本试题大纲限于watchOS 3）***
-###### 名词约定
+#### 名词约定
 watchOS开发中涉及到的主体包括，运行在iPhone的iOS程序（以下称`iOS app`），运作在Apple Watch端的App（以下简称`Watch app`)，运行在Apple Watch端的扩展（以下简称`WatchKit extension`）。
 ***（答案示例如：A,E）***
 
