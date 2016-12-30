@@ -497,7 +497,7 @@ In iOS, the contents of this directory are backed up by iTunes and iCloud.</code
     }
     // 添加开始答题计时
     var isTiming = false; // 是否正在计时
-    var eclipsedTime = 0; //已经过去的时间
+    var eclipsedTime = - 8 *60 *60 *1000; //已经过去的时间
     var startBtn = document.getElementById('start');
     var timerLabel = document.getElementById('timer');
     var chronometer;
