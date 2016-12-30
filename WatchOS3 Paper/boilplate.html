@@ -7,15 +7,91 @@
     <meta content="width=device-width,initial-scale=1.0" name="viewport">
     <style type="text/css">
         html,body{
-
+            font-size:0.95em;
+            background-color: #fcfcfc;
+            color: #292929;
+            padding: 0;
+            margin: 0
         }
+        body{
+            padding: 1em;
+        }
+        body>code, li>code{
+            background-color: rgb(245, 244, 244);
+            padding: 1px 4px;
+            border-radius: 2px;
+            margin: 0 1px;
+            border-color: #e8e1e1;
+            border-width: 1px;
+            border-style: solid;
+        }
+
         h2{
             text-align: center;
+            font-size: 1.3em;
+        }
+        blockquote{
+            padding: 0;
+            padding-left: 8px;
+            margin: 0 5px;
+            border-left: 3px solid #887c7e;
+        }
+        body > ol{
+            list-style-position: inside;
+            padding: 0
+        }
+
+        body>ol>li{
+            margin-top:5px;
+        }
+
+        ol.innerList{
+            list-style-position: inside;
+            padding: 0.3em 1em;
+            color: #696868;
+        }
+
+        ol.innerList li{
+            margin-top: 3px;
+        }
+
+        .w-view_img{
+            cursor:hand;
+            text-decoration:none;
+        }
+
+        .w-view_img img{
+            padding: 3px 0;
+            width: 100%;
+        }
+
+        .w-answer_inputer{
+            width:50px;
+        }
+
+        .w-open-answer{
+            border: 1px solid #bfaeae;
+            border-radius: 3px;
+        }
+        .w-answer-content{
+            background-color: rgba(18, 42, 72, 0.88);
+            color: #eae7e7;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+        .w-answer-content strong{
+            color: #de7676;
+        }
+
+        .w-answer-content a{
+            color: #fff;
         }
     </style>
 </head>
 
 <body>
+<label>999</label>
 <script type="text/javascript">
 	/**
      * 格式化时间
